@@ -1,0 +1,7 @@
+# Ignore everything
+*
+
+# Except files/folders
+!README.md
+!LICENSE
+!dist/
