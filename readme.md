@@ -8,7 +8,7 @@ Using Bootstrap's dropdown menu, users can select their preferred theme, and Boo
 
 ## Demo
 
-Check out the [playground](https://jindrichrucil.github.io/bootstrap-theme-toggler/playground).
+Check out the [playground](https://jindrichrucil.github.io/bootstrap-theme-toggler/resources/playground/).
 
 ## Documentation
 
