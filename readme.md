@@ -8,11 +8,11 @@ Using Bootstrap's dropdown menu, users can select their preferred theme, and Boo
 
 ## Demo
 
-Check out the [playground](https://jindrichrucil.github.io/bootstrap-theme-toggler/resources/playground).
+Check out the [playground](https://jindrichrucil.github.io/bootstrap-theme-toggler/resources/playground)
 
 ## Documentation
 
-Docs available [here](https://jindrichrucil.github.io).
+Docs available here: https://jindrichrucil.github.io
 
 ## License
 
@@ -20,4 +20,4 @@ Distributed under the **MIT** License. See [LICENSE](https://jindrichrucil.githu
 
 ## Credits
 
-Copyright © 2024 - present Jindřich Ručil.
+Copyright © 2024 - present Jindřich Ručil
