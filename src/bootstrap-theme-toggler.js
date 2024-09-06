@@ -6,7 +6,7 @@
  * Using Bootstrap's dropdown menu, users can select their preferred theme, and Bootstrap Icons can be included for an enhanced visual experience.
  *
  * @author Jindřich Ručil
- * @version 1.0.0
+ * @version 1.0.2
  * @license MIT
  * @see {@link https://jindrichrucil.github.io}
  * 
@@ -62,7 +62,7 @@ export default class BootstrapThemeToggler {
      * @private
      */
     static _log(print_msg, optional_param, error = false) {
-        const prefix = '[Bootstrap Theme Toggler v1.0.0]';
+        const prefix = '[Bootstrap Theme Toggler v1.0.2]';
         
         if (this._ENABLE_LOGS) {
             !error 
@@ -313,14 +313,13 @@ export default class BootstrapThemeToggler {
      * @static
      */
     static async setLanguage(lang) {
+        
         this._log(`Setting language to: ${lang}`);
         
         const translations = await this._loadTranslations(lang);
         
-        // Update the configuration with new translations
         this._config.i18n.translations = translations;
         
-        // Update the dropdown menu items
         const dropdown = document.getElementById(this._ELEMENT_ID);
         if (dropdown) {
             const dropdownItems = dropdown.querySelectorAll(".dropdown-menu li a");
@@ -335,7 +334,6 @@ export default class BootstrapThemeToggler {
                 }
             });
             
-            // Update the button text
             const button = dropdown.querySelector(".dropdown-toggle");
             if (button) {
                 button.innerHTML = `<i class="${button.querySelector('i').className}"></i> ${translations.system || 'System'}`;
@@ -352,6 +350,7 @@ export default class BootstrapThemeToggler {
      * @static
      */
     static async run(options = {}) {
+
         this._config = { ...this._config, ...options };
         
         this._log("Initializing..");
