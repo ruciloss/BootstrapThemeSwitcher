@@ -72,13 +72,20 @@ export default class BootstrapThemeToggler {
     }
 
     /**
-     * Generates a unique identifier string.
-     * @returns {string} A string formatted as _xxxxxxxxxxxxxxxx, where x is a random alphanumeric character.
+     * Generate RFC4122-compliant UUIDs.
+     * @returns {string}
      * @static
      * @private
      */
-    static _generateID() {
-        return '_' + Math.random().toString(16).slice(2);
+    static _uuidv4() {
+        try {
+            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, function(c) {
+                return (c ^ (window.crypto || window.msCrypto).getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16);
+            });
+        } catch (e) {
+            this._log('Failed to generate UUID', e, true); 
+            return '';  
+        }
     }
 
     /**
@@ -105,7 +112,7 @@ export default class BootstrapThemeToggler {
 
         this._log("Creating element..");
         
-        this._integrity = this._generateID();
+        this._integrity = this._uuidv4();
         this._log(`Generated ID: ${this._integrity}`);
         
         if (root.querySelector(`#${this._ELEMENT_ID}`)) {
