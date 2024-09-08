@@ -1,6 +1,6 @@
 {
     "name": "bs-theme-toggler",
-    "version": "1.0.2",
+    "version": "1.1.0",
     "author": "Jindřich Ručil",
     "license": "MIT",
     "description": "You can easily switch between light and dark modes. The theme can be set automatically based on the system's preference and will remember the user's choice. Using Bootstrap's dropdown menu, users can select their preferred theme, and Bootstrap Icons can be included for an enhanced visual experience.",
