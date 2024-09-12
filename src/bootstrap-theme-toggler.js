@@ -6,7 +6,7 @@
  * Using Bootstrap's dropdown menu, users can select their preferred theme, and Bootstrap Icons can be included for an enhanced visual experience.
  *
  * @author Jindřich Ručil
- * @version 1.1.0
+ * @version 1.1.1
  * @license MIT
  * @see {@link https://jindrichrucil.github.io}
  * 
@@ -63,105 +63,19 @@ export default class BootstrapThemeToggler {
 
     /**
      * Helper function which prints console.log/error
-     * @param {Object} print_msg - The message to print to the console.
-     * @param {Object} [optional_param] - Optional parameter to log along with the message.
+     * @param {Object} print - The message to print to the console.
+     * @param {Object} [details] - Optional parameter to log along with the message.
      * @param {boolean} [error=false] - Whether to log as an error.
      * @static
      * @private
      */
-    static _log(print_msg, optional_param, error = false) {
-        const prefix = '[Bootstrap Theme Toggler v1.1.0]';
+    static _debug(print, details, error = false) {
+        const prefix = '[Bootstrap Theme Toggler v1.1.1]';
         
         if (this._ENABLE_LOGS) {
             !error 
-                ? console.log(`${prefix} ${print_msg}`, optional_param !== undefined ? optional_param : ' ') 
-                : console.error(`${prefix} ${print_msg}`, optional_param || "");
-        }
-    }
-
-    /**
-     * Creates an HTMLElement.
-     * @param {string} type - The type of HTML element to create.
-     * @returns {HTMLElement|null} - The created HTML element of the specified type.
-     * @static
-     * @private
-     */
-    static _createNode(type) {
-        try {
-            const el = document.createElement(type);
-            if (type === 'button') {
-                el.setAttribute('type', 'button');
-            }
-            return el;
-        } catch (error) {
-            this._log('Failed to create HTML element', error, true);
-            return null;
-        }
-    }
-
-    /**
-     * Loads translations based on the configuration.
-     * @param {string} lang - The language to load.
-     * @returns {Promise<object>} - An object containing translations.
-     * @static
-     * @private
-     */
-    static async _loadTranslations(lang) {
-        try {
-            this._log(`Loading translations for language: ${lang}`);
-            const translationsConfig = this._config.i18n.translations;
-
-            if (typeof translationsConfig[lang] === 'string') {
-                const response = await fetch(translationsConfig[lang]);
-                if (response.ok) {
-                    const translations = await response.json();
-                    this._log(`Translations loaded successfully for language: ${lang}`);
-                    return translations;
-                } else {
-                    this._log(`Failed to load translations from ${translationsConfig[lang]}`, null, true);
-                }
-            }
-
-            // Check if translations for the given language exist in the config
-            if (translationsConfig[lang]) {
-                this._log(`Translations found in config for language: ${lang}`);
-                return translationsConfig[lang];
-            } else {
-                this._log(`No translations found for language: ${lang}. Using default config.`);
-                return translationsConfig[this._config.i18n.default] || {};
-            }
-        } catch (error) {
-            this._log('Error loading translations', error, true);
-            return this._config.i18n.translations[this._config.i18n.default] || {};
-        }
-    }
-
-    /**
-     * Detects the language based on the autoDetect setting.
-     * @returns {string} - The detected language.
-     * @static
-     * @private
-     */
-    static _detectLanguage() {
-        try {
-            const { autoDetect, default: defaultLang } = this._config.i18n;
-            
-            let detectedLang = defaultLang;
-    
-            if (autoDetect === 'browser') {
-                detectedLang = navigator.language.split('-')[0] || defaultLang;
-                this._log(`Detected language from browser: ${detectedLang}`);
-            } else if (autoDetect === 'document') {
-                detectedLang = document.documentElement.lang || defaultLang;
-                this._log(`Detected language from document: ${detectedLang}`);
-            } else {
-                this._log(`Language auto-detection is disabled. Used default language: ${defaultLang}`);
-            }
-            
-            return detectedLang;
-        } catch (error) {
-            this._log('Failed to detect language', error, true);
-            return this._config.i18n.default;
+                ? console.log(`${prefix} ${print}`, details !== undefined ? details : ' ') 
+                : console.error(`${prefix} ${print}`, details || "");
         }
     }
 
@@ -178,7 +92,7 @@ export default class BootstrapThemeToggler {
             });
             return `_${uuid}`;
         } catch (error) {
-            this._log('Failed to generate UUID', error, true); 
+            this._debug('Failed to generate UUID', error, true); 
             return '';  
         }
     }
@@ -194,7 +108,7 @@ export default class BootstrapThemeToggler {
         try {
             return btoa(data);
         } catch (error) {
-            this._log('Failed to encode data using Base64', error, true);
+            this._debug('Failed to encode data using Base64', error, true);
             return data;
         }
     }
@@ -210,7 +124,42 @@ export default class BootstrapThemeToggler {
         try {
             return atob(data);
         } catch (error) {
-            this._log('Failed to decode data using Base64', error, true);
+            this._debug('Failed to decode data using Base64', error, true);
+            return data;
+        }
+    }
+
+    /**
+     * Encodes data using Hex.
+     * @param {string} data - Data to encode.
+     * @returns {string} - Encoded data.
+     * @static
+     * @private
+     */
+    static _encodeHex(data) {
+        try {
+            return Array.from(new Uint8Array(new TextEncoder().encode(data)))
+                .map(byte => byte.toString(16).padStart(2, '0'))
+                .join('');
+        } catch (error) {
+            this._debug('Failed to encode data using Hex', error, true);
+            return data;
+        }
+    }
+
+    /**
+     * Decodes data from Hex.
+     * @param {string} data - Data to decode.
+     * @returns {string} - Decoded data.
+     * @static
+     * @private
+     */
+    static _decodeHex(data) {
+        try {
+            let bytes = new Uint8Array(data.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+            return new TextDecoder().decode(bytes);
+        } catch (error) {
+            this._debug('Failed to decode data using Hex', error, true);
             return data;
         }
     }
@@ -233,42 +182,7 @@ export default class BootstrapThemeToggler {
             }
             return Array.from(encryptedBytes).map(byte => byte.toString(16).padStart(2, '0')).join('');
         } catch (error) {
-            this._log('Failed to encrypt data using XOR', error, true);
-            return data;
-        }
-    }
-
-    /**
-     * Encodes data using Hex.
-     * @param {string} data - Data to encode.
-     * @returns {string} - Encoded data.
-     * @static
-     * @private
-     */
-    static _encodeHex(data) {
-        try {
-            return Array.from(new Uint8Array(new TextEncoder().encode(data)))
-                .map(byte => byte.toString(16).padStart(2, '0'))
-                .join('');
-        } catch (error) {
-            this._log('Failed to encode data using Hex', error, true);
-            return data;
-        }
-    }
-
-    /**
-     * Decodes data from Hex.
-     * @param {string} data - Data to decode.
-     * @returns {string} - Decoded data.
-     * @static
-     * @private
-     */
-    static _decodeHex(data) {
-        try {
-            let bytes = new Uint8Array(data.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
-            return new TextDecoder().decode(bytes);
-        } catch (error) {
-            this._log('Failed to decode data using Hex', error, true);
+            this._debug('Failed to encrypt data using XOR', error, true);
             return data;
         }
     }
@@ -291,7 +205,7 @@ export default class BootstrapThemeToggler {
             }
             return new TextDecoder().decode(decryptedBytes);
         } catch (error) {
-            this._log('Failed to decrypt data using XOR', error, true);
+            this._debug('Failed to decrypt data using XOR', error, true);
             return data;
         }
     }
@@ -317,13 +231,13 @@ export default class BootstrapThemeToggler {
             if (this._config.storage.encryption.enabled) {
                 if (this._config.storage.encryption.method === 'hex') {
                     data = this._encodeHex(JSON.stringify(data));
-                    this._log(`Saved key: ${key} in ${this._config.storage.type}Storage with hex encryption: ${data}`);
+                    this._debug(`Saved key: ${key} in ${this._config.storage.type}Storage with hex encryption: ${data}`);
                 } else if (this._config.storage.encryption.method === 'xor') {
                     data = this._xorEncrypt(JSON.stringify(data), this._config.storage.encryption.key);
-                    this._log(`Saved key: ${key} in ${this._config.storage.type}Storage with XOR encryption: ${data}`);
+                    this._debug(`Saved key: ${key} in ${this._config.storage.type}Storage with XOR encryption: ${data}`);
                 } else if (this._config.storage.encryption.method === 'base64') {
                     data = this._encodeBase64(JSON.stringify(data));
-                    this._log(`Saved key: ${key} in ${this._config.storage.type}Storage with base64 encryption: ${data}`);
+                    this._debug(`Saved key: ${key} in ${this._config.storage.type}Storage with base64 encryption: ${data}`);
                 }
             } else {
                 data = JSON.stringify(data);
@@ -331,7 +245,7 @@ export default class BootstrapThemeToggler {
     
             storageType.setItem(key, data);
         } catch (error) {
-            this._log('Error while storing value in storage', error, true);
+            this._debug('Error while storing value in storage', error, true);
         }
     }
 
@@ -353,13 +267,13 @@ export default class BootstrapThemeToggler {
             if (this._config.storage.encryption.enabled) {
                 if (this._config.storage.encryption.method === 'hex') {
                     data = JSON.parse(this._decodeHex(data));
-                    this._log(`Retrieved and decrypted key: ${key} from ${this._config.storage.type}Storage with hex`);
+                    this._debug(`Retrieved and decrypted key: ${key} from ${this._config.storage.type}Storage with hex`);
                 } else if (this._config.storage.encryption.method === 'xor') {
                     data = JSON.parse(this._xorDecrypt(data, this._config.storage.encryption.key));
-                    this._log(`Retrieved and decrypted key: ${key} from ${this._config.storage.type}Storage with XOR`);
+                    this._debug(`Retrieved and decrypted key: ${key} from ${this._config.storage.type}Storage with XOR`);
                 } else if (this._config.storage.encryption.method === 'base64') {
                     data = JSON.parse(this._decodeBase64(data));
-                    this._log(`Retrieved and decrypted key: ${key} from ${this._config.storage.type}Storage with base64`);
+                    this._debug(`Retrieved and decrypted key: ${key} from ${this._config.storage.type}Storage with base64`);
                 }
             } else {
                 data = JSON.parse(data);
@@ -367,47 +281,65 @@ export default class BootstrapThemeToggler {
     
             if (expiration && Date.now() - data.timestamp > expiration) {
                 storageType.removeItem(key);
-                this._log(`Item ${key} has expired.`);
+                this._debug(`Item ${key} has expired.`);
                 return null;
             }
 
             return data.value;
         } catch (error) {
-            this._log('Error retrieving value from storage', error, true);
+            this._debug('Error retrieving value from storage', error, true);
             return null;
         }
     }
 
     /**
-     * Applies the selected theme settings and updates the UI accordingly.
-     * @param {string} key - The key for localStorage or sessionStorage.
-     * @param {string} themeName - The theme name.
-     * @param {string} iconClass - The icon class for the theme.
-     * @param {string} text - The display text for the theme.
-     * @returns {void} This method does not return a value.
+     * Creates an HTMLElement.
+     * @param {string} type - The type of HTML element to create.
+     * @returns {HTMLElement|null} - The created HTML element of the specified type.
      * @static
      * @private
      */
-    static _applyThemeSettings(key, themeName, iconClass, text) {
+    static _createNode(type) {
         try {
-            document.documentElement.setAttribute("data-bs-theme", themeName);
-    
-            const toggler = document.getElementById(this._ELEMENT_ID);
-            if (!toggler) throw new Error('Element with the specified ID not found.');
-            
-            const button = toggler.querySelector(".dropdown-toggle");
-            if (!button) throw new Error('Dropdown toggle button not found.');
-    
-            button.innerHTML = `<i class="${iconClass}"></i> ${text}`;
-            
-            this._log(`Theme ${themeName} applied.`);
-
-            this._setStorage(this._LOCAL_STORAGE_KEY, key);
+            const el = document.createElement(type);
+            if (type === 'button') {
+                el.setAttribute('type', 'button');
+            }
+            return el;
         } catch (error) {
-            this._log('Failed to apply theme settings', error, true);
+            this._debug('Failed to create HTML element', error, true);
+            return null;
         }
     }
-    
+
+    /**
+     * Creates a menu item.
+     * @param {string} value - The value associated with the menu item.
+     * @param {string} text - The text displayed for the menu item.
+     * @param {string} [item] - Optional class to add to the <li> element.
+     * @param {string} [link] - Optional class to add to the <a> link element.
+     * @returns {HTMLElement} - The created <li> element with a corresponding <a> link.
+     * @static
+     * @private
+     */
+    static _createMenuItem(value, text, item = '', link = '') {
+        const li = this._createNode('li');
+        const a = this._createNode('a');
+        
+        if (item) {
+            li.className = item.trim();
+        }
+
+        a.className = link.trim();
+        a.href = '#!';
+        a.setAttribute('data-value', value);
+
+        a.append(text);
+        li.appendChild(a);
+        
+        return li;
+    }
+
     /**
      * Creates a theme toggle dropdown and appends it to the given root element.
      * @param {HTMLElement} root - The root element to append the dropdown to.
@@ -415,15 +347,15 @@ export default class BootstrapThemeToggler {
      * @static
      * @private
      */
-    static _createDropdown(root) {
+    static _createElement(root) {
         try {
-            this._log("Creating element..");
+            this._debug("Creating element..");
             
             this._id = this._uuidv4();
-            this._log(`Generated ID: ${this._id}`);
+            this._debug(`Generated ID: ${this._id}`);
             
             if (root.querySelector(`#${this._ELEMENT_ID}`)) {
-                this._log("Element already exists in the root. Skipping creation..");
+                this._debug("Element already exists in the root. Skipping creation..");
                 return;
             }
         
@@ -432,7 +364,7 @@ export default class BootstrapThemeToggler {
             dropdown.className = dropdownClass;
             dropdown.id = this._ELEMENT_ID;
             if (this._config.classes.container) {
-                this._log(`Added custom class: '${this._config.classes.container}' to the dropdown container.`);
+                this._debug(`Added custom class: '${this._config.classes.container}' to the dropdown container.`);
             }
             
             const button = this._createNode('button');
@@ -441,7 +373,7 @@ export default class BootstrapThemeToggler {
             button.setAttribute('data-bs-toggle', 'dropdown');
             button.setAttribute('aria-expanded', 'false');
             if (this._config.classes.button) {
-                this._log(`Added custom class: '${this._config.classes.button}' to the button.`);
+                this._debug(`Added custom class: '${this._config.classes.button}' to the button.`);
             }
             
             const buttonIcon = this._createNode('i');
@@ -454,44 +386,61 @@ export default class BootstrapThemeToggler {
             const dropdownMenuClass = `dropdown-menu ${this._config.classes.menu || ''}`.trim();
             dropdownMenu.className = dropdownMenuClass;
             if (this._config.classes.menu) {
-                this._log(`Added custom class: '${this._config.classes.menu}' to the dropdown menu.`);
+                this._debug(`Added custom class: '${this._config.classes.menu}' to the dropdown menu.`);
             }
             
-            const createMenuItem = (value, text) => {
-                const item = this._createNode('li');
-                const link = this._createNode('a');
-                link.className = 'dropdown-item';
-                link.href = '#!';
-                link.setAttribute('data-value', value);
-            
-                link.append(text);
-            
-                item.appendChild(link);
-                return item;
-            };
-            
-            dropdownMenu.appendChild(createMenuItem('system', this._config.i18n.system || 'System'));
-            dropdownMenu.appendChild(createMenuItem('light', this._config.i18n.light || 'Light'));
-            dropdownMenu.appendChild(createMenuItem('dark', this._config.i18n.dark || 'Dark'));
+            dropdownMenu.appendChild(this._createMenuItem('system', this._config.i18n.system || 'System', '', 'dropdown-item'));
+            dropdownMenu.appendChild(this._createMenuItem('light', this._config.i18n.light || 'Light', '', 'dropdown-item'));
+            dropdownMenu.appendChild(this._createMenuItem('dark', this._config.i18n.dark || 'Dark', '', 'dropdown-item'));
             
             dropdown.appendChild(button);
             dropdown.appendChild(dropdownMenu);
             
             if (this._config.prepend) {
                 root.insertAdjacentElement('afterbegin', dropdown); 
-                this._log("Prepended element to the root.");
+                this._debug("Prepended element to the root.");
             } else {
                 root.appendChild(dropdown); 
-                this._log("Appended element to the root.");
+                this._debug("Appended element to the root.");
             }
 
-            const comment = document.createComment(' BootstrapThemeToggler v1.1.0 | https://jindrichrucil.github.io ');
+            const comment = document.createComment('BootstrapThemeToggler v1.1.1 | https://jindrichrucil.github.io');
             root.insertBefore(comment, root.firstChild);
 
         } catch (error) {
-            this._log('Error creating dropdown element', error, true);
+            this._debug('Error creating dropdown element', error, true);
         }
     }    
+
+    /**
+     * Applies the selected theme settings and updates the UI accordingly.
+     * @param {string} key - The key for localStorage or sessionStorage.
+     * @param {string} theme - The theme name.
+     * @param {string} icon - The icon class for the theme.
+     * @param {string} text - The display text for the theme.
+     * @returns {void} This method does not return a value.
+     * @static
+     * @private
+     */
+    static _applyThemeSettings(key, theme, icon, text) {
+        try {
+            document.documentElement.setAttribute("data-bs-theme", theme);
+    
+            const toggler = document.getElementById(this._ELEMENT_ID);
+            if (!toggler) throw new Error('Element with the specified ID not found.');
+            
+            const button = toggler.querySelector(".dropdown-toggle");
+            if (!button) throw new Error('Dropdown toggle button not found.');
+    
+            button.innerHTML = `<i class="${icon}"></i> ${text}`;
+            
+            this._debug(`Theme ${theme} applied.`);
+
+            this._setStorage(this._LOCAL_STORAGE_KEY, key);
+        } catch (error) {
+            this._debug('Failed to apply theme settings', error, true);
+        }
+    }
 
     /**
      * Updates the theme based on the provided value and saves it to storage.
@@ -502,12 +451,12 @@ export default class BootstrapThemeToggler {
      */
     static _updateTheme(theme) {
         try {
-            this._log(`Updating theme to: ${theme}`);
+            this._debug(`Updating theme to: ${theme}`);
             
             const toggler = document.getElementById(this._ELEMENT_ID);
             
             if (!toggler) {
-                this._log(`Element with ID #${this._ELEMENT_ID} not found.`, null, true);
+                this._debug(`Element with ID #${this._ELEMENT_ID} not found.`, null, true);
                 return;
             }
             
@@ -518,17 +467,17 @@ export default class BootstrapThemeToggler {
             if (selectedItem) {
                 selectedItem.classList.add("active");
             } else {
-                this._log(`Theme option not found for: ${theme}`, null, true);
+                this._debug(`Theme option not found for: ${theme}`, null, true);
                 return;
             }
     
             switch (theme) {
                 case "system":
                     if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-                        this._log('Detected system preference: dark');
+                        this._debug('Detected system preference: dark');
                         this._applyThemeSettings("system", "dark", "bi bi-circle-half", this._config.i18n.translations.system || 'System');
                     } else {
-                        this._log('Detected system preference: light');
+                        this._debug('Detected system preference: light');
                         this._applyThemeSettings("system", "light", "bi bi-circle-half", this._config.i18n.translations.system || 'System');
                     }
                     break;
@@ -542,13 +491,78 @@ export default class BootstrapThemeToggler {
                     break;
     
                 default:
-                    this._log(`Unknown theme: ${theme}`, null, true);
+                    this._debug(`Unknown theme: ${theme}`, null, true);
                     break;
             }
         } catch (error) {
-            this._log('Error updating theme', error, true);
+            this._debug('Error updating theme', error, true);
+        }
+    }  
+
+    /**
+     * Loads translations based on the configuration.
+     * @param {string} lang - The language to load.
+     * @returns {Promise<object>} - An object containing translations.
+     * @static
+     * @private
+     */
+    static async _loadTranslations(lang) {
+        try {
+            this._debug(`Loading translations for language: ${lang}`);
+            const translationsConfig = this._config.i18n.translations;
+
+            if (typeof translationsConfig[lang] === 'string') {
+                const response = await fetch(translationsConfig[lang]);
+                if (response.ok) {
+                    const translations = await response.json();
+                    this._debug(`Translations loaded successfully for language: ${lang}`);
+                    return translations;
+                } else {
+                    this._debug(`Failed to load translations from ${translationsConfig[lang]}`, null, true);
+                }
+            }
+
+            if (translationsConfig[lang]) {
+                this._debug(`Translations found in config for language: ${lang}`);
+                return translationsConfig[lang];
+            } else {
+                this._debug(`No translations found for language: ${lang}. Using default config.`);
+                return translationsConfig[this._config.i18n.default] || {};
+            }
+        } catch (error) {
+            this._debug('Error loading translations', error, true);
+            return this._config.i18n.translations[this._config.i18n.default] || {};
         }
     }
+
+    /**
+     * Detects the language based on the autoDetect setting.
+     * @returns {string} - The detected language.
+     * @static
+     * @private
+     */
+    static _detectLanguage() {
+        try {
+            const { autoDetect, default: defaultLang } = this._config.i18n;
+            
+            let detectedLang = defaultLang;
+    
+            if (autoDetect === 'browser') {
+                detectedLang = navigator.language.split('-')[0] || defaultLang;
+                this._debug(`Detected language from browser: ${detectedLang}`);
+            } else if (autoDetect === 'document') {
+                detectedLang = document.documentElement.lang || defaultLang;
+                this._debug(`Detected language from document: ${detectedLang}`);
+            } else {
+                this._debug(`Language auto-detection is disabled. Used default language: ${defaultLang}`);
+            }
+            
+            return detectedLang;
+        } catch (error) {
+            this._debug('Failed to detect language', error, true);
+            return this._config.i18n.default;
+        }
+    }  
 
     /**
      * Sets the language for translations and updates the UI accordingly.
@@ -558,7 +572,7 @@ export default class BootstrapThemeToggler {
      */
     static async setLanguage(lang) {
         try {
-            this._log(`Setting language to: ${lang}`);
+            this._debug(`Setting language to: ${lang}`);
             
             const translations = await this._loadTranslations(lang);
             
@@ -584,9 +598,9 @@ export default class BootstrapThemeToggler {
                 }
             }
             
-            this._log(`Language updated to: ${lang}`);
+            this._debug(`Language updated to: ${lang}`);
         } catch (error) {
-            this._log('Error setting language', error, true);
+            this._debug('Error setting language', error, true);
         }
     }    
 
@@ -600,7 +614,7 @@ export default class BootstrapThemeToggler {
         try {
             this._config = { ...this._config, ...options };
             
-            this._log("Initializing..");
+            this._debug("Initializing..");
             
             let root;
             if (typeof this._config.root === 'string') {
@@ -612,11 +626,11 @@ export default class BootstrapThemeToggler {
             }
 
             if (!root) {
-                this._log("Root element not found. Falling back to body.", null, true);
+                this._debug("Root element not found. Falling back to body.", null, true);
                 root = document.body;
             }
             
-            this._createDropdown(root);
+            this._createElement(root);
             
             const detectedLanguage = this._detectLanguage();
             const translations = await this._loadTranslations(detectedLanguage);
@@ -627,9 +641,9 @@ export default class BootstrapThemeToggler {
             if (theme === null) {
                 theme = "system";
                 this._setStorage(this._LOCAL_STORAGE_KEY, "system");
-                this._log("No saved theme found. Defaulting to: system");
+                this._debug("No saved theme found. Defaulting to: system");
             } else {
-                this._log(`Saved theme found: ${theme}`);
+                this._debug(`Saved theme found: ${theme}`);
             }
             
             this._updateTheme(theme);
@@ -641,9 +655,9 @@ export default class BootstrapThemeToggler {
                 }
             });
             
-            this._log("Initialized!");
+            this._debug("Initialized!");
         } catch (error) {
-            this._log('Error during initialization', error, true);
+            this._debug('Error during initialization', error, true);
         }
     }
 }
