@@ -18,7 +18,7 @@ Make sure to include Bootstrap CSS, JS, and Bootstrap Theme Toggler JS in your p
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 ```
 
-### 2. Initialize the Bootstra
+### 2. Initialize the Bootstrap
 After including the required files, simply call the following JavaScript function to enable the theme toggler functionality:
 
 ```javascript
