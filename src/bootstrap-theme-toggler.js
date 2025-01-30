@@ -5,10 +5,10 @@
  * The theme can be set automatically based on the system's preference and will remember the user's choice. 
  * Using Bootstrap's dropdown menu, users can select their preferred theme, and Bootstrap Icons can be included for an enhanced visual experience.
  *
- * @author Jindřich Ručil
- * @version 1.1.1
+ * @author Ruciloss
+ * @version 1.0.0
  * @license MIT
- * @see {@link https://jindrichrucil.github.io}
+ * @see {@link https://ruciloss.github.io}
  * 
  * @requires Bootstrap 5.2 or later
  */

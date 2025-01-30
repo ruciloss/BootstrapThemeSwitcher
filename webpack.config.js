@@ -1,5 +1,6 @@
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
+const webpack = require('webpack');
 
 module.exports = [
     {
@@ -8,9 +9,9 @@ module.exports = [
             ignored: /node_modules/,
         },
         mode: 'production',
-        entry: './src/bootstrap-theme-toggler.js',
+        entry: './src/index.js',
         output: {
-            filename: 'bootstrap-theme-toggler.min.js',
+            filename: 'domeasy.min.js',
             path: path.resolve(__dirname, 'dist'),
             library: {
                 type: 'module',
@@ -51,5 +52,15 @@ module.exports = [
                 },
             ],
         },
+        plugins: [
+            new webpack.BannerPlugin({
+            banner: 
+`Bootstrap Theme Switcher
+https://ruciloss.github.io
+Author Ruciloss
+Released under the MIT License
+Build date: ${new Date().toLocaleString()}`,
+            }),
+        ],        
     },
 ];
