@@ -26,7 +26,7 @@ BootstrapThemeToggler.run();
 ```
 
 ### 3. Optional Configuration
-You can customize the toggler using the following attributes:
+You can customize the toggler using the following parameters:
 
 ```javascript
 BootstrapThemeToggler.run({
@@ -63,7 +63,7 @@ Check out the https://ruciloss.github.io
 
 ## License
 
-Distributed under the **MIT** License. See [LICENSE](https://opensource.org/license/mit) for more information.
+Distributed under the **MIT** License. See [LICENSE](https://ruciloss.github.io/license/mit) for more information.
 
 ## Credits
 

@@ -11,7 +11,7 @@ module.exports = [
         mode: 'production',
         entry: './src/index.js',
         output: {
-            filename: 'domeasy.min.js',
+            filename: 'bootstrap-theme-toggler.min.js',
             path: path.resolve(__dirname, 'dist'),
             library: {
                 type: 'module',
@@ -55,10 +55,18 @@ module.exports = [
         plugins: [
             new webpack.BannerPlugin({
             banner: 
-`Bootstrap Theme Switcher
-https://ruciloss.github.io
-Author Ruciloss
-Released under the MIT License
+`Bootstrap Theme Toggler
+ 
+You can easily switch between light and dark modes. 
+The theme can be set automatically based on the system's preference and will remember the user's choice. 
+Using Bootstrap's dropdown menu, users can select their preferred theme, and Bootstrap Icons can be included for an enhanced visual experience.
+
+@author Ruciloss
+@version 1.0.0
+@license MIT
+@see {@link https://ruciloss.github.io}
+ 
+@requires Bootstrap 5.2 or later
 Build date: ${new Date().toLocaleString()}`,
             }),
         ],        

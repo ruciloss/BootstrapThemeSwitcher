@@ -1,17 +1,3 @@
-/**
- * Bootstrap Theme Toggler
- *
- * You can easily switch between light and dark modes. 
- * The theme can be set automatically based on the system's preference and will remember the user's choice. 
- * Using Bootstrap's dropdown menu, users can select their preferred theme, and Bootstrap Icons can be included for an enhanced visual experience.
- *
- * @author Ruciloss
- * @version 1.0.0
- * @license MIT
- * @see {@link https://ruciloss.github.io}
- * 
- * @requires Bootstrap 5.2 or later
- */
 export default class BootstrapThemeToggler {
 
     /**
@@ -54,10 +40,6 @@ export default class BootstrapThemeToggler {
         storage: {
             type: 'local', // 'local' or 'session'
             expiration: null, // time in milliseconds as an integer or null for no expiration
-            encryption: {
-                enabled: true, 
-                method: 'xor' // 'base64', 'hex', 'XOR'
-            }
         }
     };
 
@@ -98,120 +80,7 @@ export default class BootstrapThemeToggler {
     }
 
     /**
-     * Encodes data using Base64.
-     * @param {string} data - Data to encode.
-     * @returns {string} - Encoded data.
-     * @static
-     * @private
-     */
-    static _encodeBase64(data) {
-        try {
-            return btoa(data);
-        } catch (error) {
-            this._debug('Failed to encode data using Base64', error, true);
-            return data;
-        }
-    }
-
-    /**
-     * Decodes data from Base64.
-     * @param {string} data - Data to decode.
-     * @returns {string} - Decoded data.
-     * @static
-     * @private
-     */
-    static _decodeBase64(data) {
-        try {
-            return atob(data);
-        } catch (error) {
-            this._debug('Failed to decode data using Base64', error, true);
-            return data;
-        }
-    }
-
-    /**
-     * Encodes data using Hex.
-     * @param {string} data - Data to encode.
-     * @returns {string} - Encoded data.
-     * @static
-     * @private
-     */
-    static _encodeHex(data) {
-        try {
-            return Array.from(new Uint8Array(new TextEncoder().encode(data)))
-                .map(byte => byte.toString(16).padStart(2, '0'))
-                .join('');
-        } catch (error) {
-            this._debug('Failed to encode data using Hex', error, true);
-            return data;
-        }
-    }
-
-    /**
-     * Decodes data from Hex.
-     * @param {string} data - Data to decode.
-     * @returns {string} - Decoded data.
-     * @static
-     * @private
-     */
-    static _decodeHex(data) {
-        try {
-            let bytes = new Uint8Array(data.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
-            return new TextDecoder().decode(bytes);
-        } catch (error) {
-            this._debug('Failed to decode data using Hex', error, true);
-            return data;
-        }
-    }
-
-    /**
-     * Encrypts data using XOR.
-     * @param {string} data - Data to encrypt.
-     * @param {string} key - Key for XOR operation.
-     * @returns {string} - Encrypted data.
-     * @static
-     * @private
-     */
-    static _xorEncrypt(data, key) {
-        try {
-            let keyBytes = new TextEncoder().encode(key);
-            let dataBytes = new TextEncoder().encode(data);
-            let encryptedBytes = new Uint8Array(dataBytes.length);
-            for (let i = 0; i < dataBytes.length; i++) {
-                encryptedBytes[i] = dataBytes[i] ^ keyBytes[i % keyBytes.length];
-            }
-            return Array.from(encryptedBytes).map(byte => byte.toString(16).padStart(2, '0')).join('');
-        } catch (error) {
-            this._debug('Failed to encrypt data using XOR', error, true);
-            return data;
-        }
-    }
-
-    /**
-     * Decrypts data using XOR.
-     * @param {string} data - Data to decrypt.
-     * @param {string} key - Key for XOR operation.
-     * @returns {string} - Decrypted data.
-     * @static
-     * @private
-     */
-    static _xorDecrypt(data, key) {
-        try {
-            let keyBytes = new TextEncoder().encode(key);
-            let encryptedBytes = new Uint8Array(data.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
-            let decryptedBytes = new Uint8Array(encryptedBytes.length);
-            for (let i = 0; i < encryptedBytes.length; i++) {
-                decryptedBytes[i] = encryptedBytes[i] ^ keyBytes[i % keyBytes.length];
-            }
-            return new TextDecoder().decode(decryptedBytes);
-        } catch (error) {
-            this._debug('Failed to decrypt data using XOR', error, true);
-            return data;
-        }
-    }
-
-    /**
-     * Sets a value into storage (localStorage or sessionStorage) with optional expiration and encryption.
+     * Sets a value into storage (localStorage or sessionStorage) with optional expiration.
      * @param {string} key - The key for storage.
      * @param {string} value - The value to store.
      * @returns {void} This method does not return a value.
@@ -227,22 +96,10 @@ export default class BootstrapThemeToggler {
                 value,
                 timestamp: expiration ? Date.now() : null
             };
+
+            // Store data as plain JSON without encryption
+            data = JSON.stringify(data);
             
-            if (this._config.storage.encryption.enabled) {
-                if (this._config.storage.encryption.method === 'hex') {
-                    data = this._encodeHex(JSON.stringify(data));
-                    this._debug(`Saved key: ${key} in ${this._config.storage.type}Storage with hex encryption: ${data}`);
-                } else if (this._config.storage.encryption.method === 'xor') {
-                    data = this._xorEncrypt(JSON.stringify(data), this._config.storage.encryption.key);
-                    this._debug(`Saved key: ${key} in ${this._config.storage.type}Storage with XOR encryption: ${data}`);
-                } else if (this._config.storage.encryption.method === 'base64') {
-                    data = this._encodeBase64(JSON.stringify(data));
-                    this._debug(`Saved key: ${key} in ${this._config.storage.type}Storage with base64 encryption: ${data}`);
-                }
-            } else {
-                data = JSON.stringify(data);
-            }
-    
             storageType.setItem(key, data);
         } catch (error) {
             this._debug('Error while storing value in storage', error, true);
@@ -264,21 +121,9 @@ export default class BootstrapThemeToggler {
             let data = storageType.getItem(key);
             if (!data) return null;
             
-            if (this._config.storage.encryption.enabled) {
-                if (this._config.storage.encryption.method === 'hex') {
-                    data = JSON.parse(this._decodeHex(data));
-                    this._debug(`Retrieved and decrypted key: ${key} from ${this._config.storage.type}Storage with hex`);
-                } else if (this._config.storage.encryption.method === 'xor') {
-                    data = JSON.parse(this._xorDecrypt(data, this._config.storage.encryption.key));
-                    this._debug(`Retrieved and decrypted key: ${key} from ${this._config.storage.type}Storage with XOR`);
-                } else if (this._config.storage.encryption.method === 'base64') {
-                    data = JSON.parse(this._decodeBase64(data));
-                    this._debug(`Retrieved and decrypted key: ${key} from ${this._config.storage.type}Storage with base64`);
-                }
-            } else {
-                data = JSON.parse(data);
-            }
-    
+            data = JSON.parse(data);
+
+            // Check expiration
             if (expiration && Date.now() - data.timestamp > expiration) {
                 storageType.removeItem(key);
                 this._debug(`Item ${key} has expired.`);
